@@ -1,0 +1,1 @@
+from adhero.handlers.generic_handler import GenericHandler
