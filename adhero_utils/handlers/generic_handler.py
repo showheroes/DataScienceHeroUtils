@@ -132,27 +132,27 @@ class GenericHandler(tornado.web.RequestHandler):
             self._exit_error(f'Request body does not include mandatory paramter "{param_name}".')
 
     def _authenticate(self):
-        # check authentication
-        if 'auth_token' in self.settings:
-            if base64.b64decode(self.settings['auth_token']) == bytes('adhero_analysis_demo', 'utf-8'):
-                return
+        # check for Authentication header
         if not 'Authentication' in self.request.headers:
             self.set_status(401, reason='Authentication header not set.')
             self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
             self._exit_error('Authentication header not set.')
 
         auth_header = self.request.headers['Authentication']
+        # check for Basic authentication, only this is supported (over SSL)
         if not auth_header.startswith('Basic'):
             self.set_status(401, reason='Only Basic authentication is supported.')
             self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
             self._exit_error('Authentication method is not Basic.')
 
+        # extract the sent authentication string and convert to byte array
         method, b64enc = auth_header.split(' ')
         b64enc_bytes = bytes(b64enc, 'utf-8')
+        # decode the byte string
         auth_plain = base64.b64decode(b64enc_bytes)
-        if auth_plain != bytes('adhero_analysis_demo', 'utf-8'):
-            self.set_status(401, reason='Authentication failed.')
-            self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
-            self._exit_error('Authentication failed, invalid authentication token.')
-
-        self.settings['auth_token'] = b64enc_bytes
+        # check if decoded byte string is correct token
+        if self._check_token(auth_plain):
+            return
+        self.set_status(401, reason='Authentication failed.')
+        self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
+        self._exit_error('Authentication failed, invalid authentication token.')
