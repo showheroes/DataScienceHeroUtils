@@ -149,7 +149,7 @@ class GenericHandler(tornado.web.RequestHandler):
         method, b64enc = auth_header.split(' ')
         b64enc_bytes = bytes(b64enc, 'utf-8')
         # decode the byte string
-        auth_plain = base64.b64decode(b64enc_bytes)
+        auth_plain = base64.b64decode(b64enc_bytes).decode('utf-8')
         # check if decoded byte string is correct token
         if self._check_token(auth_plain):
             return
