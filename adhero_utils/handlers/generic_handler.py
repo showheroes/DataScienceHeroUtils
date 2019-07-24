@@ -112,12 +112,12 @@ class GenericHandler(tornado.web.RequestHandler):
 
     # convenience methods
     @staticmethod
-    def call_service(service_url, payload, auth_token=None, method='POST'):
+    def call_service(service_url, payload, auth_token=None, method='POST', timeout=20.):
         """ Call an external service, thin wrapper around request. """
         headers = {'Content-Type':'application/json'}
         if auth_token:
             headers['Authentication'] = f'Basic {auth_token.decode("utf-8")}'
-        response = requests.request(method, service_url, headers=headers, data = json.dumps(payload), timeout=20.)
+        response = requests.request(method, service_url, headers=headers, data = json.dumps(payload), timeout=timeout)
         return response.status_code, json.loads(response.text) if response.text else None
 
     def _check_status(self, status, response):
