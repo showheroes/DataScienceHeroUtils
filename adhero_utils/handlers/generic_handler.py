@@ -83,18 +83,30 @@ class GenericHandler(tornado.web.RequestHandler):
         self.set_status(405, reason=f"No {method} requests defined for this route.")
         self._exit_error(f"No {method} requests defined for this route.")
 
-    def _exit_error(self, message):
+    def _exit_warn(self, response, warning_message, status = 200):
+        """ Response method when method returned only partly successfully. """
+        self.set_status(status)
+        resp = {
+            'state' : 'warning',
+            'response' : response,
+            'message' : warning_message
+        }
+        self._finish(resp)
+
+    def _exit_error(self, message, status = 500):
         """ Update the usage dict on error and finalizes the request. """
         l = logging.getLogger(__name__)
         l.error(message)
+        self.set_status(status)
         self._finish({'state' : 'error', 'message' : message})
 
-    def _exit_exception(self, exception):
+    def _exit_exception(self, exception, status = 500):
         """ Update the usage dict on exception and finalizes the request. """
         resp = {
             'state' : 'exception',
             'message' : exception.args
         }
+        self.set_status(status)
         tb_string = self._get_traceback_string(exception.__traceback__)
         if 'debug' in self.application.settings and self.application.settings['debug']:
             resp.update({'traceback' : tb_string})
