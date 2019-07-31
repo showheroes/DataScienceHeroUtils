@@ -126,11 +126,20 @@ class GenericHandler(tornado.web.RequestHandler):
     @staticmethod
     def call_service(service_url, payload, auth_token=None, method='POST', timeout=20.):
         """ Call an external service, thin wrapper around request. """
+        l = logging.getLogger(__name__)
         headers = {'Content-Type':'application/json'}
         if auth_token:
             headers['Authentication'] = f'Basic {auth_token.decode("utf-8")}'
         response = requests.request(method, service_url, headers=headers, data = json.dumps(payload), timeout=timeout)
-        return response.status_code, json.loads(response.text) if response.text else None
+        response_object = None
+        try:
+            response_object = json.loads(response.text)
+        except Exception as e:
+            l.error(response.text)
+            l.error(e.args)
+            l.error(GenericHandler._get_traceback_string(e.__traceback__))
+            response_object = None
+        return response.status_code, response_object
 
     def _check_status(self, status, response):
         """ Checks the status of an internal call and exits with error if status is leq 400. """
