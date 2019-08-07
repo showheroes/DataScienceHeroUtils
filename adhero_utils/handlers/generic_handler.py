@@ -139,7 +139,7 @@ class GenericHandler(tornado.web.RequestHandler):
     @staticmethod
     def _log_exception(logger, exception):
         tb_string = GenericHandler._get_traceback_string(exception.__traceback__)
-        logger.error(type(exception).__name + ': ' + str(exception))
+        logger.error(type(exception).__name__ + ': ' + str(exception))
         logger.debug(tb_string)
 
 
