@@ -104,14 +104,15 @@ class GenericHandler(tornado.web.RequestHandler):
         """ Update the usage dict on exception and finalizes the request. """
         resp = {
             'state' : 'exception',
-            'message' : exception.args
+            'name' : type(exception).__name__,
+            'message' : str(exception)
         }
         self.set_status(status)
         tb_string = self._get_traceback_string(exception.__traceback__)
         if 'debug' in self.application.settings and self.application.settings['debug']:
             resp.update({'traceback' : tb_string})
         l = logging.getLogger(__name__)
-        l.error(exception.args)
+        l.error(type(exception).__name + ': ' + str(exception))
         l.error(tb_string)
         self._finish(resp)
 
