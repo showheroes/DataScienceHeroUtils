@@ -102,11 +102,7 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def _exit_exception(self, exception, status = 500):
         """ Update the usage dict on exception and finalizes the request. """
-        resp = {
-            'state' : 'exception',
-            'name' : type(exception).__name__,
-            'message' : str(exception)
-        }
+        resp = self.create_exception_response(exception)
         self.set_status(status)
         self._log_exception(self.log, exception)
         self._finish(resp)
@@ -122,7 +118,7 @@ class GenericHandler(tornado.web.RequestHandler):
     @staticmethod
     def call_service(service_url, payload, auth_token=None, method='POST', timeout=20.):
         """ Call an external service, thin wrapper around request. """
-        l = logging.getLogger(__name__)
+        l = logging.getLogger(self.__name__)
         headers = {'Content-Type':'application/json'}
         if auth_token:
             headers['Authentication'] = f'Basic {auth_token.decode("utf-8")}'
@@ -133,8 +129,9 @@ class GenericHandler(tornado.web.RequestHandler):
         except Exception as e:
             l.error(response.text)
             GenericHandler._log_exception(l, e)
-            response_object = None
-        return response.status_code, response_object
+            response_object = GenericHandler.create_exception_response(e)
+        finally:
+            return response.status_code, response_object
 
     @staticmethod
     def _log_exception(logger, exception):
@@ -142,6 +139,13 @@ class GenericHandler(tornado.web.RequestHandler):
         logger.error(type(exception).__name__ + ': ' + str(exception))
         logger.debug(tb_string)
 
+    @staticmethod
+    def create_exception_response(exception):
+        return {
+            'state' : 'exception',
+            'name' : type(exception).__name__,
+            'message' : str(exception)
+        }
 
     def _check_status(self, status, response):
         """ Checks the status of an internal call and exits with error if status is leq 400. """
