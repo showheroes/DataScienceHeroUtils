@@ -118,7 +118,7 @@ class GenericHandler(tornado.web.RequestHandler):
     @staticmethod
     def call_service(service_url, payload, auth_token=None, method='POST', timeout=20.):
         """ Call an external service, thin wrapper around request. """
-        l = logging.getLogger(self.__name__)
+        l = logging.getLogger(__name__)
         headers = {'Content-Type':'application/json'}
         if auth_token:
             headers['Authentication'] = f'Basic {auth_token.decode("utf-8")}'
