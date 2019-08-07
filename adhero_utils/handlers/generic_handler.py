@@ -108,12 +108,7 @@ class GenericHandler(tornado.web.RequestHandler):
             'message' : str(exception)
         }
         self.set_status(status)
-        tb_string = self._get_traceback_string(exception.__traceback__)
-        if 'debug' in self.application.settings and self.application.settings['debug']:
-            resp.update({'traceback' : tb_string})
-        l = logging.getLogger(__name__)
-        l.error(type(exception).__name + ': ' + str(exception))
-        l.error(tb_string)
+        self._log_exception(self.log, exception)
         self._finish(resp)
 
     @staticmethod
@@ -137,10 +132,16 @@ class GenericHandler(tornado.web.RequestHandler):
             response_object = json.loads(response.text)
         except Exception as e:
             l.error(response.text)
-            l.error(e.args)
-            l.error(GenericHandler._get_traceback_string(e.__traceback__))
+            GenericHandler._log_exception(l, e)
             response_object = None
         return response.status_code, response_object
+
+    @staticmethod
+    def _log_exception(logger, exception):
+        tb_string = GenericHandler._get_traceback_string(exception.__traceback__)
+        logger.error(type(exception).__name + ': ' + str(exception))
+        logger.debug(tb_string)
+
 
     def _check_status(self, status, response):
         """ Checks the status of an internal call and exits with error if status is leq 400. """
