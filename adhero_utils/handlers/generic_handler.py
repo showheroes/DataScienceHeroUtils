@@ -38,8 +38,25 @@ class GenericHandler(tornado.web.RequestHandler):
     def get_usage(self):
         return {}
 
-    def get_expected_content_type(self):
+    def _check_request_headers(self):
+        """ Checks the request headers for the expected content type """
+        if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != self._get_expected_content_type():
+            self.set_status(400, reason="Unexpected content type.")
+            self._exit_error("Unexpected content type, be sure to set request headers appropriately.")
+
+    def _get_expected_content_type(self):
+        """ Standard content type is JSON. """
         return 'application/json'
+
+    def _parse_request_body(self):
+        """ Standard behavior is to expect JSON and to parse into self.args """
+        # parse request body to json object
+        try:
+            self.args = json.loads(self.request.body)
+        except Exception as e:
+            self.set_status(400, reason='Malformed JSON.')
+            self._exit_exception(e)
+
 
     def _validate_request(self):
         """
@@ -48,20 +65,12 @@ class GenericHandler(tornado.web.RequestHandler):
         arguments in JSON string and convert them to Python booleans.
         All subclasses that expect a request body need to call this, preferably in the prepare method.
         """
-        if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != self.get_expected_content_type():
-            self.set_status(400, reason="Unexpected content type.")
-            self._exit_error("Unexpected content type, be sure to set request headers appropriately.")
+        self._check_request_headers()
         # check for request body
         if not self.request.body:
             self.set_status(400, reason='No request body.')
             self._exit_error('No request body provided.')
-        # parse request body to json object
-        try:
-            self.args = json.loads(self.request.body)
-        except Exception as e:
-            self.set_status(400, reason='Malformed JSON.')
-            self._exit_exception(e)
-
+        self._parse_request_body(self)
         # take care of strings representing booleans
         for k in self.args:
             if self.args[k] in ['true', 'True']:
