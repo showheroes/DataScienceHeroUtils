@@ -70,7 +70,7 @@ class GenericHandler(tornado.web.RequestHandler):
         if not self.request.body:
             self.set_status(400, reason='No request body.')
             self._exit_error('No request body provided.')
-        self._parse_request_body(self)
+        self._parse_request_body()
         # take care of strings representing booleans
         for k in self.args:
             if self.args[k] in ['true', 'True']:
