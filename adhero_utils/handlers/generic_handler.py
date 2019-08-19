@@ -38,6 +38,9 @@ class GenericHandler(tornado.web.RequestHandler):
     def get_usage(self):
         return {}
 
+    def get_expected_content_type(self):
+        return 'application/json'
+
     def _validate_request(self):
         """
         Top level request parameter validation. Check for existence of request body
@@ -45,9 +48,9 @@ class GenericHandler(tornado.web.RequestHandler):
         arguments in JSON string and convert them to Python booleans.
         All subclasses that expect a request body need to call this, preferably in the prepare method.
         """
-        if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != 'application/json':
-            self.set_status(400, reason="Not a JSON request.")
-            self._exit_error("Not a JSON request, be sure to set request headers appropriately.")
+        if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != self.get_expected_content_type():
+            self.set_status(400, reason="Unexpected content type.")
+            self._exit_error("Unexpected content type, be sure to set request headers appropriately.")
         # check for request body
         if not self.request.body:
             self.set_status(400, reason='No request body.')
