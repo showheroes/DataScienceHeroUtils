@@ -168,7 +168,7 @@ class GenericHandler(tornado.web.RequestHandler):
     def _parameter_check(self, param_name):
         if not param_name in self.args:
             self.set_status(400, f'Parameter "{param_name}" is missing.')
-            self._exit_error(f'Request body does not include mandatory paramter "{param_name}".')
+            self._exit_error(f'Request body does not include mandatory parameter "{param_name}".')
 
     def _authenticate(self):
         # check for Authentication header
