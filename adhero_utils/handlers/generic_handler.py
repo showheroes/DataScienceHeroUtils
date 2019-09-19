@@ -163,7 +163,7 @@ class GenericHandler(tornado.web.RequestHandler):
         """ Checks the status of an internal call and exits with error if status is leq 400. """
         if status >= 400:
             self.set_status(status)
-            self._exit_error(response.text)
+            self._exit_error(response)
 
     def _parameter_check(self, param_name):
         if not param_name in self.args:
