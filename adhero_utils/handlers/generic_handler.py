@@ -55,7 +55,8 @@ class GenericHandler(tornado.web.RequestHandler):
             self.args = json.loads(self.request.body)
         except Exception as e:
             self.set_status(400, reason='Malformed JSON.')
-            self._exit_exception(e)
+            self._exit_exception(e, status = 400)
+            self.log.debug(f'error while parsing {self.request.body} to JSON')
 
 
     def _validate_request(self):
