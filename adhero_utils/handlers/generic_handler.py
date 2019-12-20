@@ -42,8 +42,7 @@ class GenericHandler(tornado.web.RequestHandler):
     def _check_request_headers(self):
         """ Checks the request headers for the expected content type """
         if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != self._get_expected_content_type():
-            self.set_status(400, reason="Unexpected content type.")
-            self._exit_error("Unexpected content type, be sure to set request headers appropriately.")
+            self._exit_error("Unexpected content type, be sure to set request headers appropriately.", status = 400)
 
     def _get_expected_content_type(self):
         """ Standard content type is JSON. """
@@ -55,7 +54,6 @@ class GenericHandler(tornado.web.RequestHandler):
         try:
             self.args = json.loads(self.request.body)
         except Exception as e:
-            self.set_status(400, reason='Malformed JSON.')
             self._exit_exception(e, status = 400)
             self.log.debug(f'error while parsing {self.request.body} to JSON')
 
@@ -70,8 +68,7 @@ class GenericHandler(tornado.web.RequestHandler):
         self._check_request_headers()
         # check for request body
         if not self.request.body:
-            self.set_status(400, reason='No request body.')
-            self._exit_error('No request body provided.')
+            self._exit_error('No request body provided.', status = 400)
         self._parse_request_body()
         # take care of strings representing booleans
         for k in self.args:
@@ -94,8 +91,7 @@ class GenericHandler(tornado.web.RequestHandler):
     # error handling
 
     def _exit_no_route(self, method):
-        self.set_status(405, reason=f"No {method} requests defined for this route.")
-        self._exit_error(f"No {method} requests defined for this route.")
+        self._exit_error(f"No {method} requests defined for this route.", status = 405)
 
     def _exit_warn(self, response, warning_message, status = 200):
         """ Response method when method returned only partly successfully. """
@@ -164,27 +160,23 @@ class GenericHandler(tornado.web.RequestHandler):
     def _check_status(self, status, response):
         """ Checks the status of an internal call and exits with error if status is leq 400. """
         if status >= 400:
-            self.set_status(status)
-            self._exit_error(response)
+            self._exit_error(response, status = status)
 
     def _parameter_check(self, param_name):
         if not param_name in self.args:
-            self.set_status(400, f'Parameter "{param_name}" is missing.')
-            self._exit_error(f'Request body does not include mandatory parameter "{param_name}".')
+            self._exit_error(f'Request body does not include mandatory parameter "{param_name}".', status = 400)
 
     def _authenticate(self):
         # check for Authentication header
         if not 'Authentication' in self.request.headers:
-            self.set_status(401, reason='Authentication header not set.')
             self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
-            self._exit_error('Authentication header not set.')
+            self._exit_error('Authentication header not set.', status = 401)
 
         auth_header = self.request.headers['Authentication']
         # check for Basic authentication, only this is supported (over SSL)
         if not auth_header.startswith('Basic'):
-            self.set_status(401, reason='Only Basic authentication is supported.')
             self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
-            self._exit_error('Authentication method is not Basic.')
+            self._exit_error('Authentication method is not Basic.', status = 401)
 
         # extract the sent authentication string and convert to byte array
         method, b64enc = auth_header.split(' ')
@@ -197,6 +189,5 @@ class GenericHandler(tornado.web.RequestHandler):
         # check if decoded byte string is correct token
         if self._check_token(auth_plain):
             return
-        self.set_status(401, reason='Authentication failed.')
         self.set_header("WWW-Authenticate", "WWW-Authenticate Basic")
-        self._exit_error('Authentication failed, invalid authentication token.')
+        self._exit_error('Authentication failed, invalid authentication token.', status = 401)
