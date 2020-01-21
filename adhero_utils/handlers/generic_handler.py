@@ -126,16 +126,24 @@ class GenericHandler(tornado.web.RequestHandler):
 
     # convenience methods
     @staticmethod
-    def call_service(service_url, payload, auth_token=None, method='POST', timeout=20.):
+    def call_service(service_url, payload, auth_token=None, method='POST', content_type = 'application/json', timeout=20.):
         """ Call an external service, thin wrapper around request. """
         l = logging.getLogger(__name__)
-        headers = {'Content-Type':'application/json'}
+        headers = {}
+        if 'POST' in method or 'PUT' in method:
+            headers.update({'Content-Type':content_type})
         if auth_token:
             headers['Authentication'] = f'Basic {auth_token.decode("utf-8")}'
-        response = requests.request(method, service_url, headers=headers, data = json.dumps(payload), timeout=timeout)
+        data = payload
+        if content_type == 'application/json':
+            data = json.dumps(payload)
+        response = requests.request(method, service_url, headers=headers, data=data, timeout=timeout)
         response_object = None
         try:
-            response_object = json.loads(response.text)
+            if response.headers['Content-Type'] == 'application/json':
+                response_object = json.loads(response.text)
+            else:
+                response_object = response.text
         except Exception as e:
             l.error(response.text)
             GenericHandler._log_exception(l, e)
