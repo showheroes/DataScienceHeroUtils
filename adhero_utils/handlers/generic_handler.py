@@ -17,7 +17,7 @@ class GenericHandler(tornado.web.RequestHandler):
     def prepare(self):
         """ Set usage dict and authenticate """
         self.usage = self.get_usage()
-        self.set_header('Content-Type' : self._get_standard_content_type())
+        self.set_header('Content-Type', self._get_standard_content_type())
         # TODO authentication is still crude, think of something more elaborate
         self._authenticate()
 
