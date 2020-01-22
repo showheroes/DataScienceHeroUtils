@@ -17,6 +17,7 @@ class GenericHandler(tornado.web.RequestHandler):
     def prepare(self):
         """ Set usage dict and authenticate """
         self.usage = self.get_usage()
+        self.set_header('Content-Type' : self._get_standard_content_type())
         # TODO authentication is still crude, think of something more elaborate
         self._authenticate()
 
@@ -41,10 +42,10 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def _check_request_headers(self):
         """ Checks the request headers for the expected content type """
-        if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != self._get_expected_content_type():
+        if not 'Content-Type' in self.request.headers or self.request.headers['Content-Type'] != self._get_standard_content_type():
             self._exit_error("Unexpected content type, be sure to set request headers appropriately.", status = 400)
 
-    def _get_expected_content_type(self):
+    def _get_standard_content_type(self):
         """ Standard content type is JSON. """
         return 'application/json'
 
