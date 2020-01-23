@@ -16,11 +16,20 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def prepare(self):
         """ Set usage dict and authenticate """
+        self.start_time = time.time_ns()
         self.usage = self.get_usage()
         self.set_header('Content-Type', self._get_standard_content_type())
         # TODO authentication is still crude, think of something more elaborate
         self._authenticate()
 
+    def on_finish(self):
+        self.end_time = time.time_ns()
+        self.elapsed_time_ms = (self.end_time - self.start_time)/1000000.
+        self._collect_statistics()
+
+    def _collect_statistics(self):
+        pass
+        
     def get(self):
         """ Standard response for GET requests 405 with is the usage string. """
         self._exit_no_route('GET')
