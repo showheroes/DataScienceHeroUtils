@@ -5,6 +5,7 @@ import json
 import traceback
 import base64
 from binascii import Error as BinasciiError
+import time
 
 class GenericHandler(tornado.web.RequestHandler):
     """ Generic request handler, defining standard pipeline of validating and processing a request. """
@@ -29,7 +30,7 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def _collect_statistics(self):
         pass
-        
+
     def get(self):
         """ Standard response for GET requests 405 with is the usage string. """
         self._exit_no_route('GET')
