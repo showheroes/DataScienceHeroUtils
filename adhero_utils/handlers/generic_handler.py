@@ -99,7 +99,7 @@ class GenericHandler(tornado.web.RequestHandler):
     def _finish(self, response_object):
         raise tornado.web.Finish(json.dumps(response_object))
 
-    def _exit_success(self, response):
+    def _exit_success(self, response, status = 200):
         """ Updates the usage dict on success and finalize the request. """
         # TODO: maybe add some stats here as request processing time or similar
         self._finish({
