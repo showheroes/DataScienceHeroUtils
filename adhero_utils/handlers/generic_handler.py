@@ -53,7 +53,9 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def _check_request_headers(self):
         """ Checks the request headers for the expected content type """
-        if not 'Content-Type' in self.request.headers or not self._accept_content_type(self.request.headers['Content-Type']):
+        if not 'Content-Type' in self.request.headers:
+            self._exit_error('No Content-Type set, be sure to set the headers appropriately', status = 400)
+        if not self._accept_content_type(self.request.headers['Content-Type']):
             self._exit_error(f"Unexpected content type: {self.request.headers['Content-Type']}, be sure to set request headers appropriately.", status = 400)
 
     def _get_accept_content_type(self):
@@ -61,7 +63,7 @@ class GenericHandler(tornado.web.RequestHandler):
         return 'application/json'
 
     def _accept_content_type(self, content_type):
-        return content_type in self._get_accept_content_type()
+        return self._get_accept_content_type() in content_type
 
     def _get_response_content_type(self):
         """ Standard content type is JSON. """
