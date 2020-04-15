@@ -17,7 +17,7 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def prepare(self):
         """ Set usage dict and authenticate """
-        self.start_time = time.time_ns()
+        self.start_time = time.time()
         self.usage = self.get_usage()
         # set standarad response content type
         self.set_header('Content-Type', self._get_response_content_type())
@@ -25,8 +25,8 @@ class GenericHandler(tornado.web.RequestHandler):
         self._authenticate()
 
     def on_finish(self):
-        self.end_time = time.time_ns()
-        self.elapsed_time_ms = (self.end_time - self.start_time)/1000000.
+        self.end_time = time.time()
+        self.elapsed_time_ms = (self.end_time - self.start_time)/1000.
         self._collect_statistics()
 
     def _collect_statistics(self):
