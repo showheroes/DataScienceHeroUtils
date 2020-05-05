@@ -26,7 +26,7 @@ class GenericHandler(tornado.web.RequestHandler):
 
     def on_finish(self):
         self.end_time = time.time()
-        self.elapsed_time_ms = (self.end_time - self.start_time)/1000.
+        self.elapsed_time_ms = (self.end_time - self.start_time)*1000.
         self._collect_statistics()
 
     def _collect_statistics(self):
