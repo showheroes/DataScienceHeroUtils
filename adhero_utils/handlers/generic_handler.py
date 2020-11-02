@@ -121,9 +121,11 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
     def _exit_success(self, response=None, status=200):
         """ Updates the usage dict on success and finalize the request. """
         # TODO: maybe add some stats here as request processing time or similar
+        self.set_status(status)
         answer = {'state': 'success'}
         if response:
             answer['response'] = response
+        self.log.debug(f'successful response ({status}), payload: {answer}')
         self._finish(answer)
 
     # error handling
@@ -139,12 +141,12 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
             'response': response,
             'message': warning_message
         }
+        self.log.warning(f'incomplete response ({status}), payload: {resp}')
         self._finish(resp)
 
     def _exit_error(self, message, status=500):
         """ Update the usage dict on error and finalizes the request. """
-        l = logging.getLogger(__name__)
-        l.error(message)
+        self.log.error(f'error {status} during response handling, reason: {message}')
         self.set_status(status)
         self._finish({'state': 'error', 'message': message})
 
