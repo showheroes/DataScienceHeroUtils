@@ -174,7 +174,7 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
         if 'POST' in method or 'PUT' in method:
             headers.update({'Content-Type': content_type})
         if auth_token:
-            headers['Authentication'] = f'Basic {auth_token.decode("utf-8")}'
+            headers['Authorization'] = f'Basic {auth_token.decode("utf-8")}'
         data = payload
         if content_type == 'application/json':
             data = json.dumps(payload)
