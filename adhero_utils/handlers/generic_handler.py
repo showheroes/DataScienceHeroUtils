@@ -179,6 +179,9 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
         if content_type == 'application/json':
             data = json.dumps(payload)
         response = requests.request(method, service_url, headers=headers, data=data, timeout=timeout)
+        if response.status_code == 204:
+            # empty successful response
+            return response.status_code, None
         response_object = None
         try:
             if response.headers['Content-Type'] == 'application/json':
