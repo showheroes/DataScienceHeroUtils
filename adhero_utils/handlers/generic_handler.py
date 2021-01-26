@@ -69,11 +69,15 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
 
     def _check_request_headers(self):
         """ Checks the request headers for the expected content type """
-        if not 'Content-Type' in self.request.headers:
+        lc_headers = {}
+        for k in self.request.headers:
+            lc_headers[k.lower()] = k
+        if 'content-type' not in lc_headers:
             self._exit_error('No Content-Type set, be sure to set the headers appropriately', status=400)
-        if not self._accept_content_type(self.request.headers['Content-Type']):
+        ct = self.request.headers[lc_headers['content-type']]
+        if not self._accept_content_type(ct):
             self._exit_error(
-                f"Unexpected content type: {self.request.headers['Content-Type']}, be sure to set request headers appropriately.",
+                f"Unexpected content type: {ct}, be sure to set request headers appropriately.",
                 status=400)
 
     def _get_accept_content_type(self):
@@ -184,7 +188,10 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
             return response.status_code, None
         response_object = None
         try:
-            if response.headers['Content-Type'] == 'application/json':
+            lc_response_headers = {}
+            for k in response.headers:
+                lc_response_headers[k.lower()] = k
+            if response.headers[lc_response_headers['content-type']] == 'application/json':
                 response_object = json.loads(response.text)
             else:
                 response_object = response.text
