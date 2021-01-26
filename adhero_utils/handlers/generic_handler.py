@@ -150,9 +150,13 @@ class GenericHandler(tornado.web.RequestHandler, tornado.auth.OAuth2Mixin):
 
     def _exit_error(self, message, status=500):
         """ Update the usage dict on error and finalizes the request. """
-        self.log.error(f'error {status} during response handling, reason: {message}')
         self.set_status(status)
-        self._finish({'state': 'error', 'message': message})
+        resp = {
+            'state': 'error',
+            'message': message
+        }
+        self.log.error(f'error {status} during response handling, reason: {message}')
+        self._finish(resp)
 
     def _exit_exception(self, exception, status=500):
         """ Update the usage dict on exception and finalizes the request. """
